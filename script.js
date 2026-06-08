@@ -4,6 +4,22 @@ let currentImage = null;
 let currentImageBase64 = null;
 let currentMemeIndex = null;
 
+function getGallery() {
+    try {
+        return JSON.parse(localStorage.getItem('memes')) || [];
+    } catch(e) {
+        return [];
+    }
+}
+
+function saveGallery(gallery) {
+    try {
+        localStorage.setItem('memes', JSON.stringify(gallery));
+    } catch(e) {
+        alert('⚠️ La galerie ne peut pas être sauvegardée dans ce navigateur.');
+    }
+}
+
 document.getElementById('imageUpload').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -101,7 +117,7 @@ function saveMeme() {
         preview: canvas.toDataURL('image/png')
     };
 
-    let gallery = JSON.parse(localStorage.getItem('memes')) || [];
+    let gallery = getGallery();
 
     if (currentMemeIndex !== null) {
         gallery[currentMemeIndex] = memeData;
@@ -111,7 +127,7 @@ function saveMeme() {
         alert('✅ Mème sauvegardé dans la galerie !');
     }
 
-    localStorage.setItem('memes', JSON.stringify(gallery));
+    saveGallery(gallery);
     currentMemeIndex = null;
     loadGallery();
 }
@@ -119,7 +135,7 @@ function saveMeme() {
 function loadGallery() {
     const galleryDiv = document.getElementById('gallery');
     galleryDiv.innerHTML = '';
-    const gallery = JSON.parse(localStorage.getItem('memes')) || [];
+    const gallery = getGallery();
 
     if (gallery.length === 0) {
         galleryDiv.innerHTML = '<p class="text-muted">Aucun mème sauvegardé pour linstant.</p>';
@@ -147,7 +163,7 @@ function loadGallery() {
 }
 
 function loadMeme(index) {
-    const gallery = JSON.parse(localStorage.getItem('memes')) || [];
+    const gallery = getGallery();
     const memeData = gallery[index];
 
     document.getElementById('topText').value = memeData.topText;
@@ -168,9 +184,9 @@ function loadMeme(index) {
 }
 
 function deleteMeme(index) {
-    let gallery = JSON.parse(localStorage.getItem('memes')) || [];
+    let gallery = getGallery();
     gallery.splice(index, 1);
-    localStorage.setItem('memes', JSON.stringify(gallery));
+    saveGallery(gallery);
     if (currentMemeIndex === index) {
         currentMemeIndex = null;
     }
