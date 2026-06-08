@@ -106,7 +106,7 @@ function drawMeme() {
         ctx.fillStyle = 'rgba(255,255,255,0.5)';
         ctx.font = '22px Segoe UI';
         ctx.textAlign = 'center';
-        ctx.fillText('📁 Uploade une image pour commencer', canvas.width / 2, canvas.height / 2);
+ctx.fillText('📁 Uploade une image pour commencer', canvas.width / 2, canvas.height / 2);
         return;
     }
 
