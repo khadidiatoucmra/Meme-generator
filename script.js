@@ -28,12 +28,19 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
     reader.onload = function(event) {
         currentImageBase64 = event.target.result;
         const img = new Image();
+        img.crossOrigin = "anonymous";
         img.onload = function() {
             currentImage = img;
             currentMemeIndex = null;
             drawMeme();
         };
+        img.onerror = function() {
+            alert('⚠️ Erreur de chargement image, réessaie !');
+        };
         img.src = currentImageBase64;
+    };
+    reader.onerror = function() {
+        alert('⚠️ Erreur de lecture du fichier !');
     };
     reader.readAsDataURL(file);
 });
@@ -47,7 +54,17 @@ function drawMeme() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (currentImage) {
-        ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+        try {
+            ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+        } catch(e) {
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.font = '18px Segoe UI';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚠️ Ouvre avec Chrome pour afficher l image', canvas.width / 2, canvas.height / 2);
+            return;
+        }
     } else {
         ctx.fillStyle = '#1a1a2e';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -175,6 +192,7 @@ function loadMeme(index) {
     currentImageBase64 = memeData.image;
 
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.onload = function() {
         currentImage = img;
         drawMeme();
