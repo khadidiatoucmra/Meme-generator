@@ -12,11 +12,36 @@ function getGallery() {
     }
 }
 
+function compressImage(base64, quality) {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 300;
+    tempCanvas.height = 200;
+    const tempCtx = tempCanvas.getContext('2d');
+    const img = new Image();
+    img.src = base64;
+    tempCtx.drawImage(img, 0, 0, 300, 200);
+    return tempCanvas.toDataURL('image/jpeg', quality);
+}
+
 function saveGallery(gallery) {
     try {
         localStorage.setItem('memes', JSON.stringify(gallery));
     } catch(e) {
-        alert('⚠️ La galerie ne peut pas être sauvegardée dans ce navigateur.');
+        try {
+            const compressed = gallery.map(function(meme) {
+                return {
+                    image: meme.image,
+                    topText: meme.topText,
+                    bottomText: meme.bottomText,
+                    textColor: meme.textColor,
+                    fontSize: meme.fontSize,
+                    preview: compressImage(meme.preview, 0.3)
+                };
+            });
+            localStorage.setItem('memes', JSON.stringify(compressed));
+        } catch(e2) {
+            alert('⚠️ Image trop lourde, essaie avec une image plus petite.');
+        }
     }
 }
 
@@ -26,18 +51,28 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
 
     const reader = new FileReader();
     reader.onload = function(event) {
-        currentImageBase64 = event.target.result;
         const img = new Image();
-        img.crossOrigin = "anonymous";
         img.onload = function() {
-            currentImage = img;
-            currentMemeIndex = null;
-            drawMeme();
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 600;
+            tempCanvas.height = 400;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(img, 0, 0, 600, 400);
+            currentImageBase64 = tempCanvas.toDataURL('image/jpeg', 0.7);
+
+            const finalImg = new Image();
+            finalImg.crossOrigin = "anonymous";
+            finalImg.onload = function() {
+                currentImage = finalImg;
+                currentMemeIndex = null;
+                drawMeme();
+            };
+            finalImg.onerror = function() {
+                alert('⚠️ Erreur de chargement image, réessaie !');
+            };
+            finalImg.src = currentImageBase64;
         };
-        img.onerror = function() {
-            alert('⚠️ Erreur de chargement image, réessaie !');
-        };
-        img.src = currentImageBase64;
+        img.src = event.target.result;
     };
     reader.onerror = function() {
         alert('⚠️ Erreur de lecture du fichier !');
